@@ -83,6 +83,7 @@ Options:
   -e, --error:            Stop on first error
   -f, --failure:          Stop on first failure or error
   -s, --shuffle:          Shuffle tests before running them
+  --list-tests:           List tests end exit
   -o, --output OUTPUT:    Set output type to OUTPUT
                           Possible values: text, tap, junit, nil
   -n, --name NAME:        For junit only, mandatory name of xml file
@@ -2400,7 +2401,7 @@ TextOutput.__class__ = 'TextOutput'
     function TextOutput:endTest( node )
         if node:isSuccess() then
             if self.verbosity > M.VERBOSITY_DEFAULT then
-                io.stdout:write("Ok\n")
+                io.stdout:write("OK\n")
             else
                 io.stdout:write(".")
                 io.stdout:flush()
@@ -2462,6 +2463,7 @@ TextOutput.__class__ = 'TextOutput'
         if self.result.notSuccessCount == 0 then
             print('OK')
         end
+        print()
     end
 
 -- class TextOutput end
@@ -2563,6 +2565,7 @@ end
         -- --verbose, -v: increase verbosity
         -- --quiet, -q: silence output
         -- --error, -e: treat errors as fatal (quit program)
+        -- --lists-tests : list tests and exit
         -- --output, -o, + name: select output type
         -- --pattern, -p, + pattern: run test matching pattern, may be repeated
         -- --exclude, -x, + pattern: run test not matching pattern, may be repeated
@@ -2611,6 +2614,9 @@ end
                 return
             elseif option == '--shuffle' or option == '-s' then
                 result['shuffle'] = true
+                return
+            elseif option == '--list-tests' then
+                result['listTests'] = true
                 return
             elseif option == '--output' or option == '-o' then
                 state = SET_OUTPUT
@@ -3235,6 +3241,15 @@ end
         local filteredList, filteredOutList = self.applyPatternFilter(
             self.patternIncludeFilter, expandedList )
 
+        if self.listTests then
+            print()
+            for i,v in ipairs( filteredList ) do
+                print(v[1])
+            end
+            self.result = { notSuccessCount = 0 }
+            return
+        end
+
         self:startSuite( #filteredList, #filteredOutList )
         self:setupSuite( listOfNameAndInst )
 
@@ -3393,6 +3408,7 @@ end
         self.exeRepeat            = options.exeRepeat
         self.patternIncludeFilter = options.pattern
         self.shuffle              = options.shuffle
+        self.listTests            = options.listTests
 
         options.output     = options.output or os.getenv('LUAUNIT_OUTPUT')
         options.fname      = options.fname  or os.getenv('LUAUNIT_JUNIT_FNAME')
