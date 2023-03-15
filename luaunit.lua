@@ -474,7 +474,7 @@ local function stripLuaunitTrace2( stackTrace, errMsg )
 
     local function isLuaunitInternalLine( s )
         -- return true if line of stack trace comes from inside luaunit
-        return s:find('[/\\]luaunit%.lua:%d+: ') ~= nil
+        return (s:find('[/\\]luaunit%.lua:%d+: ') or s:find('%[luaunit%]:')) ~= nil
     end
 
     -- print( '<<'..stackTrace..'>>' )
